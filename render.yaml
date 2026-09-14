@@ -3,7 +3,7 @@ services:
     name: crm-console
     env: python
     pythonversion: '3.12.x'
-    buildcommand: pip install -r requirements.txt && playwright install
+    buildcommand: pip install -r requirements.txt && playwright install chromium-headless-shell
     startcommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1
     plan: free
     aptpackages:
