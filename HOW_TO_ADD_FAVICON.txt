@@ -1,0 +1,20 @@
+CREATING A FAVICON FOR YOUR APP
+================================
+
+1. Create a favicon image (any of these formats):
+   - favicon.ico  (best for browser compatibility)
+   - favicon.png  (32x32 or 64x64 pixels)
+   - favicon.svg
+
+2. Save it in the SAME folder as your app.py and dashboard.html
+   Path: C:\Users\sadma\Desktop\Classics fraud checker\favicon.ico
+
+3. OR use a free online favicon generator:
+   - https://realfavicongenerator.net/
+   - https://www.favicon-generator.org/
+
+4. Upload the file to your hosting (Render) in the same directory as your app.py.
+
+5. The HTML already references:
+   - <link rel="icon" href="/favicon.ico">
+   - <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">

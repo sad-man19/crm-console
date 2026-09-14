@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Classics CRM Console - Search & Track Consignments</title>
+  <meta name="description" content="CRM Console - Search and track consignments via Steadfast courier tracking.">
+  <meta property="og:title" content="CRM Console">
+  <meta property="og:description" content="Search and track consignments via Steadfast courier tracking.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://your-render-app.com">
+  <meta property="og:image" content="/favicon.ico">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ece3de;
+      color: #2c2c2c;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 20px;
+      padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 36px 28px 32px;
+      box-shadow: 0 8px 40px rgba(133,69,35,0.10), 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid rgba(133,69,35,0.08);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(133,69,35,0.08);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+      width: 36px;
+      height: 36px;
+      background: #854523;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-icon img,
+    .brand-icon svg { width: 28px; height: 28px; }
+    .brand h1 { font-size: 20px; font-weight: 700; color: #854523; line-height: 1.2; }
+    .top-bar-right { display: flex; align-items: center; gap: 8px; }
+    .logout-btn {
+      background: none;
+      border: 1px solid rgba(133,69,35,0.2);
+      color: #956f58;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .logout-btn:hover { background: #fefcf9; border-color: #854523; color: #854523; }
+    /* ===== TAB NAV ===== */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      background: #fefcf9;
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid rgba(133,69,35,0.06);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 12px;
+      background: none;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      color: #956f58;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active { background: #854523; color: #fff; }
+    .tab-btn:hover:not(.active) { background: rgba(133,69,35,0.06); }
+    /* ===== INFO BUTTON (search page only) ===== */
+    .search-info-btn {
+      background: rgba(133,69,35,0.10);
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      color: #956f58;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .search-info-btn:hover { background: rgba(133,69,35,0.25); }
+    .search-info-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+      border: 1px solid rgba(133,69,35,0.1);
+      animation: fadeUp 0.3s ease;
+    }
+    .modal h3 { font-size: 16px; color: #854523; margin-bottom: 12px; }
+    .modal p { font-size: 13px; color: #956f58; line-height: 1.6; margin-bottom: 8px; }
+    .modal .close-modal {
+      display: block;
+      margin: 16px auto 0;
+      padding: 8px 24px;
+      background: #854523;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .modal .close-modal:hover { background: #956f58; }
+    /* ===== INPUT ===== */
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .input-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrap input {
+      width: 100%;
+      min-height: 52px;
+      padding: 0 44px 0 16px;
+      font-size: 17px;
+      font-family: inherit;
+      border: 1.5px solid #d9d2cb;
+      border-radius: 12px;
+      outline: none;
+      background: #fefcf9;
+      color: #2c2c2c;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .input-wrap input::placeholder { color: #c4b8ad; }
+    .input-wrap input:focus {
+      border-color: #854523;
+      box-shadow: 0 0 0 3px rgba(133,69,35,0.12);
+      background: #fff;
+    }
+    .input-wrap input.invalid { border-color: #c0392b; box-shadow: 0 0 0 3px rgba(192,57,43,0.10); }
+    .input-wrap input:disabled { opacity: 0.5; }
+    .clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #ece3de;
+      border: none;
+      font-size: 15px;
+      color: #956f58;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .clear-btn.visible { display: flex; }
+    .clear-btn:hover { background: #e0d5cc; color: #854523; }
+    .check-btn {
+      min-height: 52px;
+      padding: 0 20px;
+      background: #854523;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .check-btn:hover:not(:disabled) { background: #956f58; transform: translateY(-1px); }
+    .check-btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+    .check-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .validation-hint {
+      font-size: 13px;
+      color: #b8a99a;
+      margin-top: 8px;
+      min-height: 20px;
+      line-height: 1.4;
+      padding-left: 2px;
+    }
+    .validation-hint.error { color: #c0392b; }
+    .validation-hint.success { color: #27ae60; }
+    /* ===== STATUS ===== */
+    #statusContainer {
+      margin-top: 24px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #statusContainer.visible { display: block; opacity: 1; }
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .status-title { font-size: 15px; font-weight: 600; color: #2c2c2c; }
+    .status-timer {
+      font-size: 13px; font-weight: 600; color: #b8a99a;
+      background: #ece3de; padding: 3px 12px; border-radius: 20px; font-variant-numeric: tabular-nums;
+    }
+    .status-timer.complete { background: #d4ecd5; color: #27ae60; }
+    .status-timer.error { background: #f6d5d5; color: #c0392b; }
+    .progress-track { width: 100%; height: 6px; background: #ece3de; border-radius: 6px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #854523, #956f58);
+      border-radius: 6px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-fill.complete { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+    .progress-fill.error { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+    /* ===== RESULTS ===== */
+    #result { margin-top: 24px; animation: fadeUp 0.4s ease forwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .result-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .result-phone { font-weight: 700; font-size: 20px; color: #2c2c2c; }
+    .risk-badge { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .risk-low { background: #d4ecd5; color: #1e8449; }
+    .risk-moderate { background: #fdebd0; color: #a04000; }
+    .risk-high { background: #f6d5d5; color: #c0392b; }
+    .risk-error { background: #ece3de; color: #956f58; }
+    .result-rate { font-size: 14px; color: #b8a99a; margin-bottom: 16px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-card { background: #fefcf9; border-radius: 10px; padding: 14px 8px; text-align: center; border: 1px solid rgba(133,69,35,0.06); }
+    .stat-card .number { font-size: 22px; font-weight: 700; color: #2c2c2c; }
+    .stat-card .label { font-size: 11px; color: #b8a99a; margin-top: 2px; text-transform: uppercase; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 280px; }
+    th { background: #fefcf9; padding: 10px 8px; text-align: left; font-weight: 600; color: #b8a99a; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(133,69,35,0.06); }
+    td { padding: 10px 8px; border-bottom: 1px solid rgba(133,69,35,0.04); color: #956f58; }
+    .courier-name { font-weight: 600; color: #854523; }
+    .combined-row { background: #fefcf9; font-weight: 600; border-top: 1.5px solid rgba(133,69,35,0.15); }
+    .combined-row td { color: #2c2c2c; }
+    .error-text { color: #c0392b; font-size: 12px; }
+    .error-row td { color: #c0392b; }
+    /* Search Consignments Results */
+    .consign-result { margin-top: 8px; }
+    .consign-result .link-box { background: #fefcf9; border: 1px solid rgba(133,69,35,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .consign-result .date-box { font-size: 13px; color: #956f58; margin-bottom: 8px; }
+    .consign-result .date-box strong { color: #2c2c2c; }
+    .link-row { display: flex; align-items: center; gap: 6px; }
+    .consign-result .link-url {
+      font-size: 13px; color: #854523; font-weight: 600;
+      word-break: break-all; line-height: 1.4;
+      flex: 1; text-decoration: underline; text-decoration-color: rgba(133,69,35,0.3);
+      transition: text-decoration-color 0.15s;
+    }
+    .consign-result .link-url:hover { text-decoration-color: #854523; }
+    .copy-icon-btn {
+      background: #ece3de;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-icon-btn:hover { background: #d9d2cb; }
+    .copy-icon-btn.copied { background: #27ae60; color: #fff; }
+    .consign-not-found { background: #fefcf9; border: 1px solid rgba(133,69,35,0.08); border-radius: 10px; padding: 18px; text-align: center; color: #956f58; font-size: 15px; font-weight: 600; margin-top: 8px; }
+    .consign-error { background: #fefcf9; border: 1px solid rgba(192,57,43,0.15); border-radius: 10px; padding: 14px; text-align: center; color: #c0392b; font-size: 13px; margin-top: 8px; }
+    .search-info-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    /* ===== FOOTER ===== */
+    .footer { margin-top: 24px; font-size: 11px; color: #d9d2cb; text-align: center; line-height: 1.6; }
+    @media (max-width: 440px) {
+      body { padding: 16px; justify-content: flex-start; }
+      .container { padding: 28px 20px 24px; border-radius: 16px; }
+      .summary-grid { gap: 6px; }
+      .stat-card { padding: 12px 6px; }
+    }
+    @media (max-width: 360px) {
+      .container { padding: 20px 16px 20px; }
+      .input-group { flex-wrap: wrap; }
+      .input-wrap { width: 100%; }
+      .input-wrap input { width: 100%; }
+      .check-btn { width: 100%; margin-top: 8px; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <h1>CRM <span style="color:#956f58;">Console</span></h1>
+      </div>
+      <div class="top-bar-right">
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <!-- TAB NAV -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="fraud">Fraud Check</button>
+      <button class="tab-btn" data-tab="search">Search Consignment</button>
+    </div>
+
+    <!-- INFO MODAL (shown only on search page) -->
+    <div class="modal-overlay" id="infoModal">
+      <div class="modal">
+        <h3>ℹ️ Search Consignment</h3>
+        <p>1. This feature works for <strong>Steadfast only</strong>.</p>
+        <p>2. If you encounter any error, try using the <strong>Fraud Check</strong> first for the same number, then try Search Consignment again.</p>
+        <button class="close-modal" id="closeModal">Got it</button>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-group">
+      <div class="input-wrap">
+        <input type="text" id="phoneInput" placeholder="01758508707" inputmode="numeric" autofocus autocomplete="off">
+        <button class="clear-btn" id="clearBtn" aria-label="Clear">✕</button>
+      </div>
+      <button class="check-btn" id="checkBtn" disabled>Check</button>
+    </div>
+    <div id="validationHint" class="validation-hint">Enter a 013–019 Bangladeshi number</div>
+    <div class="search-info-row">
+      <button class="search-info-btn" id="infoBtn" title="Info">i</button>
+    </div>
+
+    <!-- STATUS -->
+    <div id="statusContainer">
+      <div class="status-header">
+        <span class="status-title" id="statusTitle">Initializing</span>
+        <span class="status-timer" id="timerDisplay">0.0s</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="result"></div>
+
+    <div class="footer">Built for daily fraud moderation · Report an issue to developer<br>Crafted with ❤️ for Classics</div>
+  </div>
+
+  <script>
+    // ===== STATE =====
+    let currentView = 'fraud';
+    let isChecking = false;
+    let startTime = null;
+    let timerInterval = null;
+
+    // ===== DOM REFS =====
+    const input = document.getElementById('phoneInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resultDiv = document.getElementById('result');
+    const validationHint = document.getElementById('validationHint');
+    const statusContainer = document.getElementById('statusContainer');
+    const statusTitle = document.getElementById('statusTitle');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const progressFill = document.getElementById('progressFill');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const closeModal = document.getElementById('closeModal');
+
+    // ===== AUTH CHECK =====
+    async function checkAuth() {
+      try {
+        const res = await fetch('/user', { credentials: 'include' });
+        const data = await res.json();
+        if (!data.logged_in) { window.location.href = '/'; }
+      } catch (e) { window.location.href = '/'; }
+    }
+
+    // ===== LOGOUT =====
+    logoutBtn.addEventListener('click', async () => {
+      try { await fetch('/logout', { method: 'POST', credentials: 'include' }); } catch (e) {}
+      window.location.href = '/';
+    });
+
+    // ===== INFO MODAL =====
+    closeModal.addEventListener('click', () => { infoModal.classList.remove('visible'); });
+    infoModal.addEventListener('click', (e) => { if (e.target === infoModal) infoModal.classList.remove('visible'); });
+    infoBtn.addEventListener('click', () => { infoModal.classList.add('visible'); });
+    infoBtn.style.display = 'none';
+
+    // ===== TAB SWITCHING =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.dataset.tab;
+        resetView();
+      });
+    });
+
+    function resetView() {
+      resultDiv.innerHTML = '';
+      clearBtn.classList.remove('visible');
+      input.value = '';
+      validateAndFormat();
+      statusContainer.classList.remove('visible');
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      startTime = null;
+      timerDisplay.textContent = '0.0s';
+      timerDisplay.className = 'status-timer';
+      progressFill.style.width = '0%';
+      progressFill.className = 'progress-fill';
+      statusTitle.textContent = 'Initializing';
+      if (currentView === 'fraud') {
+        input.placeholder = '01758508707';
+        checkBtn.textContent = 'Check';
+        validationHint.textContent = 'Enter a 013–019 Bangladeshi number';
+        checkBtn.disabled = true;
+      } else {
+        input.placeholder = 'Search Consignment';
+        checkBtn.textContent = 'Search';
+        validationHint.textContent = 'Steadfast only. Try Fraud Check first if errors occur.';
+        checkBtn.disabled = true;
+      }
+      input.focus();
+      const infoRow = document.querySelector('.search-info-row');
+      if (infoRow) infoRow.style.display = currentView === 'search' ? 'flex' : 'none';
+    }
+
+    // ===== PHONE VALIDATION =====
+    function sanitizePhone(raw) {
+      let cleaned = raw.replace(/\D/g, '');
+      if (cleaned.startsWith('880') && cleaned.length > 10) cleaned = cleaned.slice(3);
+      if (cleaned.length === 10 && !cleaned.startsWith('0')) cleaned = '0' + cleaned;
+      if (cleaned.length === 10 && cleaned.startsWith('01')) cleaned = '0' + cleaned;
+      if (cleaned.length > 11) cleaned = cleaned.slice(-11);
+      if (cleaned.length !== 11) return cleaned;
+      return cleaned;
+    }
+    function isValidPhone(phone) {
+      if (!phone || phone.length !== 11 || !/^\d+$/.test(phone)) return false;
+      if (!phone.startsWith('01')) return false;
+      const thirdDigit = parseInt(phone[2]);
+      return thirdDigit >= 3 && thirdDigit <= 9;
+    }
+    function validateAndFormat() {
+      const raw = input.value;
+      const sanitized = sanitizePhone(raw);
+      input.value = sanitized;
+      clearBtn.classList.toggle('visible', sanitized.length > 0);
+      if (sanitized.length === 0) {
+        validationHint.textContent = 'Enter a 013–019 Bangladeshi number';
+        validationHint.className = 'validation-hint';
+        input.classList.remove('invalid');
+        checkBtn.disabled = true;
+        return false;
+      }
+      if (isValidPhone(sanitized)) {
+        validationHint.textContent = '✅ Valid number – ready to check';
+        validationHint.className = 'validation-hint success';
+        input.classList.remove('invalid');
+        checkBtn.disabled = false;
+        return true;
+      } else {
+        let hint = '';
+        if (sanitized.length < 11) hint = `Need ${11 - sanitized.length} more digit(s)`;
+        else if (sanitized.length > 11) hint = 'Too many digits (max 11)';
+        else if (!sanitized.startsWith('01') || !['3','4','5','6','7','8','9'].includes(sanitized[2])) hint = 'Must start with 013–019';
+        else hint = 'Valid number';
+        validationHint.textContent = `⚠️ ${hint}`;
+        validationHint.className = 'validation-hint error';
+        input.classList.add('invalid');
+        checkBtn.disabled = true;
+        return false;
+      }
+    }
+    clearBtn.addEventListener('click', () => { input.value = ''; resultDiv.innerHTML = ''; clearBtn.classList.remove('visible'); validateAndFormat(); input.focus(); statusContainer.classList.remove('visible'); progressFill.style.width = '0%'; progressFill.className = 'progress-fill'; timerDisplay.textContent = '0.0s'; timerDisplay.className = 'status-timer'; statusTitle.textContent = 'Initializing'; if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } });
+    input.addEventListener('input', validateAndFormat);
+    input.addEventListener('paste', () => setTimeout(validateAndFormat, 0));
+    input.addEventListener('blur', validateAndFormat);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !checkBtn.disabled && !isChecking) {
+        if (currentView === 'search') searchConsignments(input.value);
+        else checkNumber(input.value);
+      }
+      if (e.key === 'Escape') { input.value = ''; resultDiv.innerHTML = ''; clearBtn.classList.remove('visible'); validateAndFormat(); input.focus(); }
+    });
+    checkBtn.addEventListener('click', () => {
+      if (currentView === 'search') searchConsignments(input.value);
+      else checkNumber(input.value);
+    });
+
+    // ===== FRAUD CHECK =====
+    async function checkNumber(phone) {
+      const finalPhone = sanitizePhone(phone);
+      if (!isValidPhone(finalPhone)) { resultDiv.innerHTML = `<div class="consign-error">Please enter exactly 11 digits starting with 013–019</div>`; return; }
+      if (isChecking) return;
+      isChecking = true;
+      checkBtn.disabled = true;
+      input.disabled = true;
+      statusContainer.classList.remove('visible');
+      resultDiv.innerHTML = '';
+      statusContainer.classList.add('visible');
+      startTimer();
+      statusTitle.textContent = 'Checking Steadfast';
+      progressFill.style.width = '30%';
+      try {
+        const response = await fetch(`/check?phone=${finalPhone}`, { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Server error');
+        progressFill.style.width = '100%';
+        progressFill.className = 'progress-fill complete';
+        timerDisplay.className = 'status-timer complete';
+        stopTimer(true);
+        displayResults(data);
+      } catch (err) {
+        progressFill.className = 'progress-fill error';
+        timerDisplay.className = 'status-timer error';
+        stopTimer(false);
+        resultDiv.innerHTML = `<div class="consign-error">${err.message || 'Search failed'}</div>`;
+      } finally {
+        isChecking = false;
+        checkBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    function displayResults(data) {
+      const { pathao, steadfast, combined, phone, elapsed } = data;
+      const hasPathaoError = pathao.error !== null && pathao.error !== undefined;
+      const hasSteadfastError = steadfast.error !== null && steadfast.error !== undefined;
+      let riskClass = 'risk-low';
+      let riskText = combined.risk_level || 'Low Risk';
+      if (hasPathaoError && hasSteadfastError) { riskClass = 'risk-error'; riskText = 'Both couriers unavailable'; }
+      else if (hasPathaoError || hasSteadfastError) { riskClass = 'risk-moderate'; riskText = 'Partial data'; }
+      else { riskClass = combined.risk_level === 'Low Risk' ? 'risk-low' : combined.risk_level === 'Moderate Risk' ? 'risk-moderate' : 'risk-high'; riskText = combined.risk_level || 'Low Risk'; }
+      let html = `<div class="result-header"><span class="result-phone">📱 ${phone}</span><span class="risk-badge ${riskClass}">${riskText}</span></div>`;
+      html += `<div class="result-rate">Combined Success Rate: <strong>${combined.success_rate}%</strong>`;
+      if (elapsed) html += `<span style="color:#b8a99a;font-size:12px;margin-left:8px;">${elapsed.toFixed(1)}s</span>`;
+      html += `</div>`;
+      if (!hasPathaoError || !hasSteadfastError) {
+        html += `<div class="summary-grid"><div class="stat-card"><div class="number">${combined.total}</div><div class="label">Total</div></div><div class="stat-card"><div class="number">${combined.success}</div><div class="label">Successful</div></div><div class="stat-card"><div class="number">${combined.cancelled}</div><div class="label">Cancelled</div></div></div>`;
+      }
+      html += `<div class="table-wrap"><table><thead><tr><th>Courier</th><th>Total</th><th>Success</th><th>Cancelled</th><th>Rate</th></tr></thead><tbody>`;
+      if (hasPathaoError) html += `<tr class="error-row"><td class="courier-name">Pathao</td><td colspan="4"><span class="error-text">❌ ${pathao.error}</span></td></tr>`;
+      else html += `<tr><td class="courier-name">Pathao</td><td>${pathao.total}</td><td>${pathao.delivered}</td><td>${pathao.returned}</td><td>${pathao.success_rate}%</td></tr>`;
+      if (hasSteadfastError) html += `<tr class="error-row"><td class="courier-name">Steadfast</td><td colspan="4"><span class="error-text">❌ ${steadfast.error}</span></td></tr>`;
+      else html += `<tr><td class="courier-name">Steadfast</td><td>${steadfast.total}</td><td>${steadfast.success}</td><td>${steadfast.cancellation}</td><td>${steadfast.success_rate}%</td></tr>`;
+      if (!hasPathaoError && !hasSteadfastError) html += `<tr class="combined-row"><td>Combined</td><td>${combined.total}</td><td>${combined.success}</td><td>${combined.cancelled}</td><td>${combined.success_rate}%</td></tr>`;
+      html += `</tbody></table></div>`;
+      resultDiv.innerHTML = html;
+    }
+
+    // ===== SEARCH CONSIGNMENTS =====
+    async function searchConsignments(phone) {
+      const finalPhone = sanitizePhone(phone);
+      if (!isValidPhone(finalPhone)) { resultDiv.innerHTML = `<div class="consign-error">Please enter exactly 11 digits starting with 013–019</div>`; return; }
+      if (isChecking) return;
+      isChecking = true;
+      checkBtn.disabled = true;
+      input.disabled = true;
+      resultDiv.innerHTML = '';
+      statusContainer.classList.add('visible');
+      statusTitle.textContent = 'Searching';
+      progressFill.style.width = '100%';
+      progressFill.className = 'progress-fill';
+      startTimer();
+      try {
+        const response = await fetch(`/search?phone=${finalPhone}`, { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Server error');
+        progressFill.style.width = '100%';
+        progressFill.className = 'progress-fill complete';
+        timerDisplay.className = 'status-timer complete';
+        stopTimer(true);
+        displayConsignmentResult(data, finalPhone);
+      } catch (err) {
+        progressFill.className = 'progress-fill error';
+        timerDisplay.className = 'status-timer error';
+        stopTimer(false);
+        resultDiv.innerHTML = `<div class="consign-error">${err.message || 'Search failed'}</div>`;
+      } finally {
+        isChecking = false;
+        checkBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    function displayConsignmentResult(data, phone) {
+      if (data.result === 'not_found') {
+        resultDiv.innerHTML = `
+          <div class="result-header"><span class="result-phone">📱 ${phone}</span></div>
+          <div class="consign-not-found">Steadfast Found Nothing!</div>`;
+        return;
+      }
+      if (data.result === 'error' || data.error) {
+        resultDiv.innerHTML = `<div class="consign-error">${data.error || 'Error occurred'}</div>`;
+        return;
+      }
+      const results = data.results || [];
+      if (results.length === 0) {
+        resultDiv.innerHTML = `<div class="consign-not-found">No consignment results found</div>`;
+        return;
+      }
+      let html = `<div class="result-header"><span class="result-phone">📱 ${phone}</span><span class="result-rate">${results.length} result${results.length > 1 ? 's' : ''}</span></div><div class="consign-result">`;
+      results.forEach((item, index) => {
+        const link = item.link || '#';
+        const date = item.date || '—';
+        const copyId = `copyBtn${index}`;
+        html += `<div class="link-box"><div class="date-box">Date: <strong>${date}</strong></div><div class="search-info-row"><a href="${link}" target="_blank" class="link-url">${link}</a><button class="copy-icon-btn" id="${copyId}" title="Copy link">📋</button></div></div>`;
+      });
+      html += `</div>`;
+      resultDiv.innerHTML = html;
+      results.forEach((item, index) => {
+        const copyId = `copyBtn${index}`;
+        const link = item.link || '';
+        const btn = document.getElementById(copyId);
+        btn?.addEventListener('click', () => {
+          navigator.clipboard.writeText(link).then(() => {
+            btn.textContent = '✅';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('copied'); }, 2000);
+          }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = link;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            btn.textContent = '✅';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('copied'); }, 2000);
+          });
+        });
+      });
+    }
+
+    // ===== TIMER =====
+    function startTimer() { startTime = Date.now(); timerInterval = setInterval(() => { timerDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's'; }, 100); }
+    function stopTimer(success) { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } if (startTime) { timerDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's'; timerDisplay.className = success ? 'status-timer complete' : 'status-timer error'; startTime = null; } }
+
+    // ===== INIT =====
+    window.addEventListener('load', () => { checkAuth(); input.focus(); validateAndFormat(); });
+  </script>
+</body>
+</html>

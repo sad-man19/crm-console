@@ -1,0 +1,16 @@
+.env
+__pycache__
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+*.json
+index.html
+favicon.ico
+*.ico
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
